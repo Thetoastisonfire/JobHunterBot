@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Alert Bot - Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #faf8f4; --white: #ffffff; --ink: #1c1917; --ink-mid: #44403c;
+  --ink-light: #78716c; --teal: #0d9488; --teal-light: #f0fdfa;
+  --teal-mid: #99f6e4; --teal-dark: #0f766e; --amber: #d97706;
+  --amber-light: #fffbeb; --amber-mid: #fcd34d; --green: #16a34a;
+  --green-light: #f0fdf4; --green-mid: #86efac; --red: #dc2626;
+  --border: #e7e5e4; --border-dark: #d6d3d1; --code-bg: #f5f5f4;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.04);
+  --shadow: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--cream); color: var(--ink); font-family: "DM Sans", sans-serif; font-size: 15px; line-height: 1.6; padding-bottom: 80px; }
+
+/* Header */
+.header { background: var(--ink); padding: 18px 32px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+.logo { font-family: "Lora", serif; font-size: 18px; font-weight: 700; color: white; }
+.logo span { color: var(--teal); }
+.progress-wrap { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 420px; }
+.prog-track { flex: 1; height: 4px; background: rgba(255,255,255,.15); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width .5s ease; width: 0; }
+.prog-label { font-family: "JetBrains Mono", monospace; font-size: 12px; color: rgba(255,255,255,.45); white-space: nowrap; }
+
+/* Layout */
+.container { max-width: 760px; margin: 0 auto; padding: 36px 20px; }
+
+/* Cards */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s, border-color .2s; }
+.card:hover { box-shadow: var(--shadow); }
+.card.done { border-color: #5eead4; }
+
+.card-head { display: flex; align-items: flex-start; gap: 14px; padding: 22px 24px; cursor: pointer; user-select: none; }
+.step-num { width: 34px; height: 34px; border-radius: 9px; background: var(--code-bg); border: 1.5px solid var(--border-dark); font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 500; color: var(--ink-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; transition: all .2s; }
+.card.done .step-num { background: var(--teal); border-color: var(--teal); color: white; }
+.head-text { flex: 1; }
+.step-title { font-family: "Lora", serif; font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.step-sub { font-size: 13px; color: var(--ink-light); margin-top: 2px; }
+.chevron { color: var(--ink-light); font-size: 13px; margin-top: 8px; transition: transform .2s; flex-shrink: 0; }
+.chevron.open { transform: rotate(180deg); }
+
+.card-body { padding: 0 24px 24px; }
+.card-divider { height: 1px; background: var(--border); margin: 0 -24px 22px; }
+
+/* Info / warn boxes */
+.info-box { background: var(--teal-light); border: 1px solid var(--teal-mid); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: var(--teal-dark); margin-bottom: 18px; line-height: 1.5; }
+.warn-box { background: var(--amber-light); border: 1px solid var(--amber-mid); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: #92400e; margin-bottom: 18px; line-height: 1.5; }
+.info-box a, .warn-box a { color: inherit; font-weight: 600; }
+
+/* Instruction list */
+.inst { list-style: none; counter-reset: inst; }
+.inst li { counter-increment: inst; display: flex; gap: 12px; margin-bottom: 11px; font-size: 14px; color: var(--ink-mid); }
+.inst li::before { content: counter(inst); min-width: 22px; height: 22px; background: var(--teal); color: white; border-radius: 50%; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-top: 1px; flex-shrink: 0; }
+.inst li a { color: var(--teal-dark); font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--teal-mid); }
+.inst li a:hover { border-color: var(--teal); }
+
+/* Keyword editor */
+.field-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-light); margin-bottom: 7px; display: block; }
+.kw-tags { display: flex; flex-wrap: wrap; gap: 7px; padding: 12px; background: var(--code-bg); border: 1px solid var(--border-dark); border-radius: 10px; min-height: 50px; margin-bottom: 10px; }
+.kw-tag { display: flex; align-items: center; gap: 5px; background: white; border: 1px solid var(--border-dark); border-radius: 6px; padding: 4px 8px 4px 10px; font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--ink); }
+.kw-tag button { background: none; border: none; cursor: pointer; color: var(--ink-light); font-size: 15px; line-height: 1; padding: 0; opacity: .5; transition: opacity .15s, color .15s; }
+.kw-tag button:hover { opacity: 1; color: var(--red); }
+.add-row { display: flex; gap: 8px; }
+.add-row input { flex: 1; padding: 9px 13px; border: 1px solid var(--border-dark); border-radius: 8px; font-family: "JetBrains Mono", monospace; font-size: 13px; background: white; color: var(--ink); outline: none; transition: border-color .15s; }
+.add-row input:focus { border-color: var(--teal); }
+
+/* Fields */
+.field { margin-bottom: 15px; }
+.field input { width: 100%; padding: 9px 13px; border: 1px solid var(--border-dark); border-radius: 8px; font-size: 14px; background: white; color: var(--ink); outline: none; transition: border-color .15s; font-family: "DM Sans", sans-serif; }
+.field input:focus { border-color: var(--teal); }
+.field .hint { font-size: 12px; color: var(--ink-light); margin-top: 4px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13.5px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; font-family: "DM Sans", sans-serif; transition: all .15s; }
+.btn-primary { background: var(--teal); color: white; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-outline { background: white; color: var(--ink-mid); border: 1px solid var(--border-dark); }
+.btn-outline:hover { border-color: var(--teal); color: var(--teal-dark); background: var(--teal-light); }
+.btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: 6px; }
+
+/* File rows */
+.file-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border-dark); border-radius: 10px; margin-bottom: 8px; gap: 12px; }
+.file-info .file-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 500; color: var(--ink); }
+.file-info .file-desc { font-size: 12px; color: var(--ink-light); margin-top: 2px; }
+
+/* Secrets table */
+.sec-table { width: 100%; border-collapse: collapse; }
+.sec-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-light); padding: 0 10px 10px; }
+.sec-table td { padding: 9px 10px; border-top: 1px solid var(--border); vertical-align: middle; }
+.sec-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 500; color: var(--ink); }
+.sec-val { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--ink-light); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sec-val.filled { color: var(--teal-dark); }
+.copy-btn { background: none; border: 1px solid var(--border-dark); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--ink-light); font-family: "DM Sans", sans-serif; transition: all .15s; }
+.copy-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+.copy-btn.ok { border-color: var(--green); color: var(--green); }
+.copy-btn:disabled { opacity: .35; cursor: default; }
+
+/* Done row */
+.done-row { display: flex; align-items: center; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); cursor: pointer; }
+.done-box { width: 20px; height: 20px; border: 2px solid var(--border-dark); border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; font-size: 12px; color: white; }
+.done-box.checked { background: var(--teal); border-color: var(--teal); }
+.done-text { font-size: 13.5px; font-weight: 500; color: var(--ink-light); }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+/* Success */
+.success { background: var(--green-light); border: 1px solid var(--green-mid); border-radius: 14px; padding: 24px; text-align: center; display: none; margin-top: 8px; }
+.success.show { display: block; }
+.success h3 { font-family: "Lora", serif; font-size: 22px; color: #15803d; margin-bottom: 6px; }
+.success p { font-size: 14px; color: #166534; line-height: 1.6; }
+
+code { font-family: "JetBrains Mono", monospace; font-size: 12.5px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; color: var(--teal-dark); }
+strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<textarea id="F-checker-py" style="display:none">import json
+import os
+import re
+import smtplib
+import urllib.request
+import urllib.parse
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+# - Load config --------------------------------
+with open("config.json") as f:
+    config = json.load(f)
+
+EMAIL_FROM      = os.environ["EMAIL_FROM"].replace("\xa0", "").strip()
+EMAIL_PASSWORD  = os.environ["EMAIL_PASSWORD"].replace("\xa0", "").strip()
+EMAIL_TO        = os.environ["EMAIL_TO"].replace("\xa0", "").strip()
+ADZUNA_APP_ID   = os.environ["ADZUNA_APP_ID"].replace("\xa0", "").strip()
+ADZUNA_APP_KEY  = os.environ["ADZUNA_APP_KEY"].replace("\xa0", "").strip()
+SEEN_FILE       = "seen_jobs.json"
+
+# - State helpers -------------------------------
+def load_seen() -> set[Any]:
+    if Path(SEEN_FILE).exists():
+        content = Path(SEEN_FILE).read_text().strip()
+        if content:
+            return set(json.loads(content))
+    return set()
+
+def save_seen(seen: set[Any]) -> None:
+    Path(SEEN_FILE).write_text(json.dumps(sorted(seen), indent=2))
+
+# - Fetch jobs from Adzuna API ----------------------
+def fetch_jobs(keyword: str) -> list[dict[str, Any]]:
+    params = urllib.parse.urlencode({
+        "app_id":           ADZUNA_APP_ID,
+        "app_key":          ADZUNA_APP_KEY,
+        "results_per_page": 50,
+        "what":             keyword,
+        "where":            config.get("location", "United States"),
+        "sort_by":          "date",
+        "max_days_old":     3,
+    })
+    url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?{params}"
+
+    req = urllib.request.Request(url, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data: dict[str, Any] = json.loads(resp.read())
+    except Exception as e:
+        print(f"  !!!  Adzuna request failed for '{keyword}': {e}")
+        return []
+
+    jobs: list[dict[str, Any]] = []
+    for item in data.get("results", []):
+        jobs.append({
+            "id":       str(item.get("id", item.get("redirect_url", ""))),
+            "title":    item.get("title", "Untitled"),
+            "company":  item.get("company", {}).get("display_name", ""),
+            "location": item.get("location", {}).get("display_name", ""),
+            "link":     item.get("redirect_url", ""),
+            "excerpt":  item.get("description", "")[:220].strip(),
+            "date":     item.get("created", ""),
+            "keyword":  keyword,
+        })
+    return jobs
+
+# - Build notification email -------------------------
+def send_email(jobs: list[dict[str, Any]]) -> None:
+    count   = len(jobs)
+    subject = f"[!]{count} new job{'s' if count > 1 else ''} - {datetime.now().strftime('%b %d, %Y')}"
+
+    # Plain text
+    lines = [subject, ""]
+    for j in jobs:
+        lines += [j["title"], f"  {j['company']}  ~  {j['location']}",
+                  f"  Keyword: {j['keyword']}", f"  {j['link']}", ""]
+    plain = "\n".join(lines)
+
+    # HTML cards
+    cards = ""
+    for j in jobs:
+        excerpt = re.sub(r"<[^>]+>", "", str(j["excerpt"])).strip()
+        if excerpt and not excerpt.endswith("..."):
+            excerpt += "..."
+        company_loc = "     ".join(filter(None, [j["company"], j["location"]]))
+        cards += f"""
+        <div style="border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px;
+                    margin-bottom:14px;background:#fff;">
+          <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;
+                    letter-spacing:.06em;">via "{j['keyword']}"</p>
+          <h3 style="margin:0 0 4px;font-size:16px;color:#111827;line-height:1.35;">{j['title']}</h3>
+          {"<p style='margin:0 0 10px;font-size:12px;color:#6b7280;'>"+company_loc+"</p>" if company_loc else ""}
+          {"<p style='margin:0 0 12px;font-size:13px;color:#374151;line-height:1.5;'>"+excerpt+"</p>" if excerpt else ""}
+          <a href="{j['link']}" style="display:inline-block;background:#1A56B0;color:#fff;
+             padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;">
+            View job ->
+          </a>
+        </div>"""
+
+    html = f"""<!DOCTYPE html><html>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;">
+  <div style="max-width:580px;margin:32px auto;padding:0 16px 40px;">
+    <div style="background:#1A56B0;border-radius:10px;padding:24px 28px;margin-bottom:24px;">
+      <h2 style="margin:0;color:#fff;font-size:22px;">[!]{count} new job{'s' if count > 1 else ''} found</h2>
+      <p style="margin:6px 0 0;color:#bfdbfe;font-size:13px;">
+        {datetime.now().strftime('%B %d, %Y at %H:%M UTC')} ~via Adzuna</p>
+    </div>
+    {cards}
+    <p style="text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;">
+      Edit <code>config.json</code> in your repo to change keywords or location.
+    </p>
+  </div>
+</body></html>"""
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = EMAIL_FROM
+    msg["To"]      = EMAIL_TO
+    msg.attach(MIMEText(plain, "plain"))
+    msg.attach(MIMEText(html,  "html"))
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(EMAIL_FROM, EMAIL_PASSWORD)
+        server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+
+    print(f"['V'] Email sent - {count} jobs")
+
+# - Main -----------------------------------
+def main():
+    seen: set[Any] = load_seen()
+    new_jobs: list[dict[str, Any]] = []
+
+    for keyword in config["keywords"]:
+        jobs = fetch_jobs(keyword)
+        print(f"  '{keyword}' -> {len(jobs)} results")
+        for job in jobs:
+            if job["id"] not in seen:
+                new_jobs.append(job)
+                seen.add(job["id"])
+
+    print(f"\n{len(new_jobs)} new (unseen) jobs found")
+
+    if new_jobs:
+        send_email(new_jobs)
+    else:
+        print("No new jobs - no email sent")
+
+    save_seen(seen)
+
+if __name__ == "__main__":
+    main()</textarea>
+<textarea id="F-checker-yml" style="display:none">name: Job Alert Checker
+
+on:
+  schedule:
+    - cron: '0 9,17 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-jobs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run job checker
+        env:
+          EMAIL_FROM:      ${{ secrets.EMAIL_FROM }}
+          EMAIL_PASSWORD:  ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO:        ${{ secrets.EMAIL_TO }}
+          ADZUNA_APP_ID:   ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY:  ${{ secrets.ADZUNA_APP_KEY }}
+        run: python checker.py
+
+      - name: Save seen jobs back to repo
+        run: |
+          git config user.name  "job-alert-bot"
+          git config user.email "job-alert-bot@users.noreply.github.com"
+          git add seen_jobs.json
+          git diff --staged --quiet || git commit -m "chore: update seen jobs [skip ci]"
+          git push</textarea>
+
+<header class="header">
+  <div class="logo">Job Alert <span>Bot</span></div>
+  <div class="progress-wrap">
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-label" id="prog-label">0 / 6 steps</div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- Step 1 -->
+<div class="card" id="S1">
+  <div class="card-head" onclick="toggle(1)">
+    <div class="step-num" id="N1">1</div>
+    <div class="head-text">
+      <div class="step-title">Configure your job search</div>
+      <div class="step-sub">Set keywords and location, then download config.json</div>
+    </div>
+    <div class="chevron open" id="C1">&#9660;</div>
+  </div>
+  <div class="card-body" id="B1">
+    <div class="card-divider"></div>
+    <span class="field-label">Keywords</span>
+    <div class="kw-tags" id="kw-tags"></div>
+    <div class="add-row" style="margin-bottom:18px">
+      <input type="text" id="kw-inp" placeholder="Type a keyword and press Enter  e.g. junior developer remote" />
+      <button class="btn btn-outline btn-sm" onclick="addKw()">+ Add</button>
+    </div>
+    <div class="field">
+      <span class="field-label">Location</span>
+      <input type="text" id="loc" value="United States" />
+      <div class="hint">Use "United States" for nationwide, or a city like "San Francisco" for local results</div>
+    </div>
+    <button class="btn btn-primary" onclick="dlConfig()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Download config.json
+    </button>
+    <div class="done-row" onclick="markDone(1)">
+      <div class="done-box" id="D1"></div>
+      <div class="done-text">Done &mdash; config.json downloaded and added to my repo</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="card" id="S2">
+  <div class="card-head" onclick="toggle(2)">
+    <div class="step-num" id="N2">2</div>
+    <div class="head-text">
+      <div class="step-title">Get a free Adzuna API key</div>
+      <div class="step-sub">Takes about 2 minutes &mdash; free account, no credit card</div>
+    </div>
+    <div class="chevron" id="C2">&#9660;</div>
+  </div>
+  <div class="card-body" id="B2" style="display:none">
+    <div class="card-divider"></div>
+    <ol class="inst">
+      <li>Go to <a href="https://developer.adzuna.com/signup" target="_blank">developer.adzuna.com/signup</a> and create a free account</li>
+      <li>After logging in, click <strong>Create App</strong> &mdash; name it anything like <code>job-bot</code></li>
+      <li>Copy your <strong>App ID</strong> and <strong>API Key</strong> from the dashboard and paste them below</li>
+    </ol>
+    <div class="divider"></div>
+    <div class="two-col">
+      <div class="field">
+        <span class="field-label">Adzuna App ID</span>
+        <input type="text" id="az-id" placeholder="e.g. a1b2c3d4" oninput="refreshSecrets()" />
+      </div>
+      <div class="field">
+        <span class="field-label">Adzuna API Key</span>
+        <input type="text" id="az-key" placeholder="e.g. e5f6g7h8i9..." oninput="refreshSecrets()" />
+      </div>
+    </div>
+    <div class="done-row" onclick="markDone(2)">
+      <div class="done-box" id="D2"></div>
+      <div class="done-text">Done &mdash; I have my App ID and API Key</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div class="card" id="S3">
+  <div class="card-head" onclick="toggle(3)">
+    <div class="step-num" id="N3">3</div>
+    <div class="head-text">
+      <div class="step-title">Create a Gmail App Password</div>
+      <div class="step-sub">Your regular Gmail password won&apos;t work &mdash; you need a special app password</div>
+    </div>
+    <div class="chevron" id="C3">&#9660;</div>
+  </div>
+  <div class="card-body" id="B3" style="display:none">
+    <div class="card-divider"></div>
+    <div class="warn-box"><strong>Before you start:</strong> 2-Step Verification must be ON in your Google account or the App Passwords option won&apos;t appear.</div>
+    <ol class="inst">
+      <li>Go to <a href="https://myaccount.google.com/security" target="_blank">myaccount.google.com/security</a> and confirm 2-Step Verification is ON</li>
+      <li>In the search bar at the top of your Google account page, search <strong>&ldquo;App Passwords&rdquo;</strong> and click the result</li>
+      <li>Type a name like <code>job-bot</code> then click <strong>Create</strong></li>
+      <li>Copy the 16-character password &mdash; it only shows once, so don&apos;t close the window yet</li>
+    </ol>
+    <div class="divider"></div>
+    <div class="two-col">
+      <div class="field">
+        <span class="field-label">Your Gmail address</span>
+        <input type="email" id="g-from" placeholder="yourname@gmail.com" oninput="refreshSecrets()" />
+        <div class="hint">Used as the sender (EMAIL_FROM)</div>
+      </div>
+      <div class="field">
+        <span class="field-label">App Password</span>
+        <input type="text" id="g-pass" placeholder="abcd efgh ijkl mnop" oninput="refreshSecrets()" />
+        <div class="hint">The 16-character code from Google</div>
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">Send alerts to (EMAIL_TO)</span>
+      <input type="email" id="g-to" placeholder="Can be the same Gmail or a different address" oninput="refreshSecrets()" />
+    </div>
+    <div class="done-row" onclick="markDone(3)">
+      <div class="done-box" id="D3"></div>
+      <div class="done-text">Done &mdash; I have my Gmail address and App Password</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 4 -->
+<div class="card" id="S4">
+  <div class="card-head" onclick="toggle(4)">
+    <div class="step-num" id="N4">4</div>
+    <div class="head-text">
+      <div class="step-title">Create a GitHub repo and upload files</div>
+      <div class="step-sub">Download all 4 files below, then upload to a new private repo</div>
+    </div>
+    <div class="chevron" id="C4">&#9660;</div>
+  </div>
+  <div class="card-body" id="B4" style="display:none">
+    <div class="card-divider"></div>
+    <div class="info-box"><strong>First:</strong> Create a new <strong>private</strong> repo at <a href="https://github.com/new" target="_blank">github.com/new</a> &mdash; name it something like <code>job-alert-bot</code>. Then download and upload all 4 files below.</div>
+    <p style="font-size:13.5px;color:var(--ink-mid);margin-bottom:14px;line-height:1.6">The workflow file goes in a <code>.github/workflows/</code> folder &mdash; type that path when uploading on GitHub (Add file &rarr; Upload files, then type the path in the filename box).</p>
+    <div class="file-row">
+      <div class="file-info">
+        <div class="file-name">checker.py</div>
+        <div class="file-desc">Main script &mdash; fetches jobs from Adzuna and sends the email</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="dlFile('checker.py')">&#8595; Download</button>
+    </div>
+    <div class="file-row">
+      <div class="file-info">
+        <div class="file-name">config.json</div>
+        <div class="file-desc">Your keywords and location (also downloadable from Step 1)</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="dlConfig()">&#8595; Download</button>
+    </div>
+    <div class="file-row">
+      <div class="file-info">
+        <div class="file-name">.github/workflows/checker.yml</div>
+        <div class="file-desc">Tells GitHub Actions to run the bot twice daily</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="dlFile('checker.yml')">&#8595; Download</button>
+    </div>
+    <div class="file-row">
+      <div class="file-info">
+        <div class="file-name">seen_jobs.json</div>
+        <div class="file-desc">Starts empty &mdash; bot fills this automatically to avoid duplicates</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="dlSeen()">&#8595; Download</button>
+    </div>
+    <div class="done-row" onclick="markDone(4)">
+      <div class="done-box" id="D4"></div>
+      <div class="done-text">Done &mdash; all 4 files are in my GitHub repo</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<div class="card" id="S5">
+  <div class="card-head" onclick="toggle(5)">
+    <div class="step-num" id="N5">5</div>
+    <div class="head-text">
+      <div class="step-title">Add secrets to GitHub</div>
+      <div class="step-sub">5 secrets total &mdash; values auto-fill from what you entered above</div>
+    </div>
+    <div class="chevron" id="C5">&#9660;</div>
+  </div>
+  <div class="card-body" id="B5" style="display:none">
+    <div class="card-divider"></div>
+    <div class="info-box">In your repo: <strong>Settings &rarr; Secrets and variables &rarr; Actions &rarr; New repository secret</strong>. Add each row below one at a time.</div>
+    <table class="sec-table">
+      <thead><tr><th>Secret name (copy exactly)</th><th>Value to paste</th><th></th></tr></thead>
+      <tbody id="sec-body"></tbody>
+    </table>
+    <div class="done-row" onclick="markDone(5)">
+      <div class="done-box" id="D5"></div>
+      <div class="done-text">Done &mdash; all 5 secrets added to GitHub</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 6 -->
+<div class="card" id="S6">
+  <div class="card-head" onclick="toggle(6)">
+    <div class="step-num" id="N6">6</div>
+    <div class="head-text">
+      <div class="step-title">Run the bot!</div>
+      <div class="step-sub">Trigger a test run and wait for your first email</div>
+    </div>
+    <div class="chevron" id="C6">&#9660;</div>
+  </div>
+  <div class="card-body" id="B6" style="display:none">
+    <div class="card-divider"></div>
+    <ol class="inst">
+      <li>In your GitHub repo, click the <strong>Actions</strong> tab at the top</li>
+      <li>Click <strong>Job Alert Checker</strong> in the left sidebar</li>
+      <li>Click the <strong>Run workflow</strong> dropdown &rarr; green <strong>Run workflow</strong> button</li>
+      <li>Wait about 30&ndash;60 seconds, then check your inbox</li>
+    </ol>
+    <div class="info-box" style="margin-top:16px">
+      The first run emails everything matching your keywords from the past 3 days. After that, you only get an email when new jobs appear. The bot runs automatically at <strong>9am and 5pm UTC</strong> every day.
+    </div>
+    <div class="done-row" onclick="markDone(6)">
+      <div class="done-box" id="D6"></div>
+      <div class="done-text">Done &mdash; I got my first email!</div>
+    </div>
+  </div>
+</div>
+
+<div class="success" id="success-banner">
+  <h3>You&apos;re all set!</h3>
+  <p>The bot checks for new jobs twice a day and emails you when it finds something new.<br>
+  To change keywords later, just edit <code>config.json</code> directly in your GitHub repo.</p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+const DEFAULT_KWS = [
+  "entry level software engineer",
+  "associate software engineer",
+  "junior software engineer",
+  "new grad software engineer",
+  "junior developer",
+  "software engineer Japanese bilingual",
+  "entry level developer"
+];
+let kws = [...DEFAULT_KWS];
+let doneSteps = {};
+
+// Keywords
+function renderKws() {
+  const w = document.getElementById("kw-tags");
+  w.innerHTML = "";
+  kws.forEach((k, i) => {
+    const t = document.createElement("div");
+    t.className = "kw-tag";
+    t.innerHTML = "<span>" + k + "</span><button onclick='rmKw(" + i + ")' title='Remove'>&times;</button>";
+    w.appendChild(t);
+  });
+}
+function addKw() {
+  const inp = document.getElementById("kw-inp");
+  const v = inp.value.trim();
+  if (v && !kws.includes(v)) { kws.push(v); renderKws(); }
+  inp.value = ""; inp.focus();
+}
+function rmKw(i) { kws.splice(i, 1); renderKws(); }
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("kw-inp").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") addKw();
+  });
+  renderKws();
+  refreshSecrets();
+});
+
+// Downloads
+function dlBlob(name, content, mime) {
+  const b = new Blob([content], { type: mime || "text/plain" });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement("a");
+  a.href = u; a.download = name; a.click();
+  URL.revokeObjectURL(u);
+}
+function dlConfig() {
+  const loc = document.getElementById("loc").value.trim() || "United States";
+  dlBlob("config.json", JSON.stringify({ keywords: kws, location: loc }, null, 2), "application/json");
+}
+function dlFile(name) {
+  const id = name === "checker.py" ? "F-checker-py" : "F-checker-yml";
+  dlBlob(name, document.getElementById(id).value, "text/plain");
+}
+function dlSeen() { dlBlob("seen_jobs.json", "[]", "application/json"); }
+
+// Secrets
+const SECRET_KEYS = ["EMAIL_FROM","EMAIL_PASSWORD","EMAIL_TO","ADZUNA_APP_ID","ADZUNA_APP_KEY"];
+function getVals() {
+  return {
+    EMAIL_FROM:     (document.getElementById("g-from")||{}).value||"",
+    EMAIL_PASSWORD: (document.getElementById("g-pass")||{}).value||"",
+    EMAIL_TO:       (document.getElementById("g-to")||{}).value||"",
+    ADZUNA_APP_ID:  (document.getElementById("az-id")||{}).value||"",
+    ADZUNA_APP_KEY: (document.getElementById("az-key")||{}).value||""
+  };
+}
+function refreshSecrets() {
+  const v = getVals();
+  const tb = document.getElementById("sec-body");
+  if (!tb) return;
+  tb.innerHTML = "";
+  SECRET_KEYS.forEach(function(k) {
+    const val = v[k].trim();
+    const filled = !!val;
+    const display = filled ? val : "(fill in steps 2-3 above)";
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td><span class=\"sec-name\">" + k + "</span></td>" +
+      "<td><span class=\"sec-val" + (filled ? " filled" : "") + "\">" + (filled ? val : "<em style=\"opacity:.5\">" + display + "</em>") + "</span></td>" +
+      "<td><button class=\"copy-btn\" id=\"CP-" + k + "\" " + (filled ? "" : "disabled") + " onclick=\"copySec('" + k + "')\">" + (filled ? "Copy" : "--") + "</button></td>";
+    tb.appendChild(tr);
+  });
+}
+function copySec(k) {
+  const v = getVals()[k];
+  if (!v) return;
+  navigator.clipboard.writeText(v).then(function() {
+    const btn = document.getElementById("CP-" + k);
+    btn.textContent = "Copied!"; btn.classList.add("ok");
+    setTimeout(function() { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 2000);
+  });
+}
+
+// Step toggle
+function toggle(n) {
+  const b = document.getElementById("B" + n);
+  const c = document.getElementById("C" + n);
+  const open = b.style.display !== "none";
+  b.style.display = open ? "none" : "block";
+  c.classList.toggle("open", !open);
+}
+
+// Mark done
+function markDone(n) {
+  doneSteps[n] = !doneSteps[n];
+  const d = document.getElementById("D" + n);
+  const s = document.getElementById("S" + n);
+  const num = document.getElementById("N" + n);
+  d.classList.toggle("checked", doneSteps[n]);
+  d.innerHTML = doneSteps[n] ? "&#10003;" : "";
+  s.classList.toggle("done", doneSteps[n]);
+  num.innerHTML = doneSteps[n] ? "&#10003;" : n;
+  const total = Object.values(doneSteps).filter(Boolean).length;
+  document.getElementById("prog-fill").style.width = (total / 6 * 100) + "%";
+  document.getElementById("prog-label").textContent = total + " / 6 steps";
+  document.getElementById("success-banner").classList.toggle("show", total === 6);
+}
+</script>
+</body>
+</html>
