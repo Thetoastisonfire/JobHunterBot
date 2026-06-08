@@ -5,125 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Job Alert Bot - Setup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --cream: #faf8f4; --white: #ffffff; --ink: #1c1917; --ink-mid: #44403c;
-  --ink-light: #78716c; --teal: #0d9488; --teal-light: #f0fdfa;
-  --teal-mid: #99f6e4; --teal-dark: #0f766e; --amber: #d97706;
-  --amber-light: #fffbeb; --amber-mid: #fcd34d; --green: #16a34a;
-  --green-light: #f0fdf4; --green-mid: #86efac; --red: #dc2626;
-  --border: #e7e5e4; --border-dark: #d6d3d1; --code-bg: #f5f5f4;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.04);
-  --shadow: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.05);
+  --cream:#faf8f4;--white:#fff;--ink:#1c1917;--ink-mid:#44403c;--ink-light:#78716c;
+  --teal:#0d9488;--teal-l:#f0fdfa;--teal-m:#99f6e4;--teal-d:#0f766e;
+  --amber:#d97706;--amber-l:#fffbeb;--amber-m:#fcd34d;
+  --green:#16a34a;--green-l:#f0fdf4;--green-m:#86efac;
+  --red:#dc2626;--red-l:#fef2f2;
+  --border:#e7e5e4;--border-d:#d6d3d1;--code:#f5f5f4;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 2px 8px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.09),0 1px 4px rgba(0,0,0,.05);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--cream); color: var(--ink); font-family: "DM Sans", sans-serif; font-size: 15px; line-height: 1.6; padding-bottom: 80px; }
-
-/* Header */
-.header { background: var(--ink); padding: 18px 32px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
-.logo { font-family: "Lora", serif; font-size: 18px; font-weight: 700; color: white; }
-.logo span { color: var(--teal); }
-.progress-wrap { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 420px; }
-.prog-track { flex: 1; height: 4px; background: rgba(255,255,255,.15); border-radius: 2px; overflow: hidden; }
-.prog-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width .5s ease; width: 0; }
-.prog-label { font-family: "JetBrains Mono", monospace; font-size: 12px; color: rgba(255,255,255,.45); white-space: nowrap; }
-
-/* Layout */
-.container { max-width: 760px; margin: 0 auto; padding: 36px 20px; }
-
-/* Cards */
-.card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s, border-color .2s; }
-.card:hover { box-shadow: var(--shadow); }
-.card.done { border-color: #5eead4; }
-
-.card-head { display: flex; align-items: flex-start; gap: 14px; padding: 22px 24px; cursor: pointer; user-select: none; }
-.step-num { width: 34px; height: 34px; border-radius: 9px; background: var(--code-bg); border: 1.5px solid var(--border-dark); font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 500; color: var(--ink-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; transition: all .2s; }
-.card.done .step-num { background: var(--teal); border-color: var(--teal); color: white; }
-.head-text { flex: 1; }
-.step-title { font-family: "Lora", serif; font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.3; }
-.step-sub { font-size: 13px; color: var(--ink-light); margin-top: 2px; }
-.chevron { color: var(--ink-light); font-size: 13px; margin-top: 8px; transition: transform .2s; flex-shrink: 0; }
-.chevron.open { transform: rotate(180deg); }
-
-.card-body { padding: 0 24px 24px; }
-.card-divider { height: 1px; background: var(--border); margin: 0 -24px 22px; }
-
-/* Info / warn boxes */
-.info-box { background: var(--teal-light); border: 1px solid var(--teal-mid); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: var(--teal-dark); margin-bottom: 18px; line-height: 1.5; }
-.warn-box { background: var(--amber-light); border: 1px solid var(--amber-mid); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: #92400e; margin-bottom: 18px; line-height: 1.5; }
-.info-box a, .warn-box a { color: inherit; font-weight: 600; }
-
-/* Instruction list */
-.inst { list-style: none; counter-reset: inst; }
-.inst li { counter-increment: inst; display: flex; gap: 12px; margin-bottom: 11px; font-size: 14px; color: var(--ink-mid); }
-.inst li::before { content: counter(inst); min-width: 22px; height: 22px; background: var(--teal); color: white; border-radius: 50%; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-top: 1px; flex-shrink: 0; }
-.inst li a { color: var(--teal-dark); font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--teal-mid); }
-.inst li a:hover { border-color: var(--teal); }
-
-/* Keyword editor */
-.field-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-light); margin-bottom: 7px; display: block; }
-.kw-tags { display: flex; flex-wrap: wrap; gap: 7px; padding: 12px; background: var(--code-bg); border: 1px solid var(--border-dark); border-radius: 10px; min-height: 50px; margin-bottom: 10px; }
-.kw-tag { display: flex; align-items: center; gap: 5px; background: white; border: 1px solid var(--border-dark); border-radius: 6px; padding: 4px 8px 4px 10px; font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--ink); }
-.kw-tag button { background: none; border: none; cursor: pointer; color: var(--ink-light); font-size: 15px; line-height: 1; padding: 0; opacity: .5; transition: opacity .15s, color .15s; }
-.kw-tag button:hover { opacity: 1; color: var(--red); }
-.add-row { display: flex; gap: 8px; }
-.add-row input { flex: 1; padding: 9px 13px; border: 1px solid var(--border-dark); border-radius: 8px; font-family: "JetBrains Mono", monospace; font-size: 13px; background: white; color: var(--ink); outline: none; transition: border-color .15s; }
-.add-row input:focus { border-color: var(--teal); }
-
-/* Fields */
-.field { margin-bottom: 15px; }
-.field input { width: 100%; padding: 9px 13px; border: 1px solid var(--border-dark); border-radius: 8px; font-size: 14px; background: white; color: var(--ink); outline: none; transition: border-color .15s; font-family: "DM Sans", sans-serif; }
-.field input:focus { border-color: var(--teal); }
-.field .hint { font-size: 12px; color: var(--ink-light); margin-top: 4px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-/* Buttons */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13.5px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; font-family: "DM Sans", sans-serif; transition: all .15s; }
-.btn-primary { background: var(--teal); color: white; }
-.btn-primary:hover { background: var(--teal-dark); }
-.btn-outline { background: white; color: var(--ink-mid); border: 1px solid var(--border-dark); }
-.btn-outline:hover { border-color: var(--teal); color: var(--teal-dark); background: var(--teal-light); }
-.btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: 6px; }
-
-/* File rows */
-.file-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border-dark); border-radius: 10px; margin-bottom: 8px; gap: 12px; }
-.file-info .file-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 500; color: var(--ink); }
-.file-info .file-desc { font-size: 12px; color: var(--ink-light); margin-top: 2px; }
-
-/* Secrets table */
-.sec-table { width: 100%; border-collapse: collapse; }
-.sec-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-light); padding: 0 10px 10px; }
-.sec-table td { padding: 9px 10px; border-top: 1px solid var(--border); vertical-align: middle; }
-.sec-name { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 500; color: var(--ink); }
-.sec-val { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--ink-light); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sec-val.filled { color: var(--teal-dark); }
-.copy-btn { background: none; border: 1px solid var(--border-dark); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--ink-light); font-family: "DM Sans", sans-serif; transition: all .15s; }
-.copy-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
-.copy-btn.ok { border-color: var(--green); color: var(--green); }
-.copy-btn:disabled { opacity: .35; cursor: default; }
-
-/* Done row */
-.done-row { display: flex; align-items: center; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); cursor: pointer; }
-.done-box { width: 20px; height: 20px; border: 2px solid var(--border-dark); border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; font-size: 12px; color: white; }
-.done-box.checked { background: var(--teal); border-color: var(--teal); }
-.done-text { font-size: 13.5px; font-weight: 500; color: var(--ink-light); }
-
-/* Divider */
-.divider { height: 1px; background: var(--border); margin: 18px 0; }
-
-/* Success */
-.success { background: var(--green-light); border: 1px solid var(--green-mid); border-radius: 14px; padding: 24px; text-align: center; display: none; margin-top: 8px; }
-.success.show { display: block; }
-.success h3 { font-family: "Lora", serif; font-size: 22px; color: #15803d; margin-bottom: 6px; }
-.success p { font-size: 14px; color: #166534; line-height: 1.6; }
-
-code { font-family: "JetBrains Mono", monospace; font-size: 12.5px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; color: var(--teal-dark); }
-strong { font-weight: 600; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:"DM Sans",sans-serif;font-size:15px;line-height:1.6;padding-bottom:80px}
+.header{background:var(--ink);padding:17px 32px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:24px;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.logo{font-family:"Lora",serif;font-size:18px;font-weight:700;color:#fff}.logo span{color:var(--teal)}
+.prog-wrap{display:flex;align-items:center;gap:10px;flex:1;max-width:420px}
+.prog-track{flex:1;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .5s;width:0}
+.prog-label{font-family:"JetBrains Mono",monospace;font-size:12px;color:rgba(255,255,255,.45);white-space:nowrap}
+.container{max-width:760px;margin:0 auto;padding:36px 20px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s,border-color .2s}
+.card:hover{box-shadow:var(--sh2)}.card.done{border-color:#5eead4}
+.card-head{display:flex;align-items:flex-start;gap:14px;padding:22px 24px;cursor:pointer;user-select:none}
+.snum{width:34px;height:34px;border-radius:9px;background:var(--code);border:1.5px solid var(--border-d);font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;color:var(--ink-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .2s}
+.card.done .snum{background:var(--teal);border-color:var(--teal);color:#fff}
+.htext{flex:1}.stitle{font-family:"Lora",serif;font-size:17px;font-weight:600;color:var(--ink);line-height:1.3}
+.ssub{font-size:13px;color:var(--ink-light);margin-top:2px}
+.chev{color:var(--ink-light);font-size:13px;margin-top:8px;transition:transform .2s;flex-shrink:0}
+.chev.open{transform:rotate(180deg)}
+.cbody{padding:0 24px 24px}.cdiv{height:1px;background:var(--border);margin:0 -24px 22px}
+.info{background:var(--teal-l);border:1px solid var(--teal-m);border-radius:10px;padding:12px 16px;font-size:13.5px;color:var(--teal-d);margin-bottom:18px;line-height:1.5}
+.warn{background:var(--amber-l);border:1px solid var(--amber-m);border-radius:10px;padding:12px 16px;font-size:13.5px;color:#92400e;margin-bottom:18px;line-height:1.5}
+.info a,.warn a{color:inherit;font-weight:600}
+.inst{list-style:none;counter-reset:inst}
+.inst li{counter-increment:inst;display:flex;gap:12px;margin-bottom:11px;font-size:14px;color:var(--ink-mid)}
+.inst li::before{content:counter(inst);min-width:22px;height:22px;background:var(--teal);color:#fff;border-radius:50%;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0}
+.inst li a{color:var(--teal-d);font-weight:500;text-decoration:none;border-bottom:1px solid var(--teal-m)}
+.inst li a:hover{border-color:var(--teal)}
+.flabel{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-light);margin-bottom:7px;display:block}
+/* tag editors */
+.tag-wrap{display:flex;flex-wrap:wrap;gap:7px;padding:12px;background:var(--code);border:1px solid var(--border-d);border-radius:10px;min-height:50px;margin-bottom:10px}
+.tag-item{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--border-d);border-radius:6px;padding:4px 8px 4px 10px;font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink)}
+.tag-item.bl{background:var(--red-l);border-color:#fca5a5;color:var(--red)}
+.tag-item button{background:none;border:none;cursor:pointer;color:var(--ink-light);font-size:15px;line-height:1;padding:0;opacity:.5;transition:opacity .15s,color .15s}
+.tag-item button:hover{opacity:1;color:var(--red)}
+.add-row{display:flex;gap:8px;margin-bottom:18px}
+.add-row input{flex:1;padding:9px 13px;border:1px solid var(--border-d);border-radius:8px;font-family:"JetBrains Mono",monospace;font-size:13px;background:#fff;color:var(--ink);outline:none;transition:border-color .15s}
+.add-row input:focus{border-color:var(--teal)}
+/* slider */
+.slider-wrap{margin-bottom:20px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.slider-row input[type=range]{flex:1;accent-color:var(--teal);height:4px;cursor:pointer}
+.slider-val{font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:500;color:var(--teal-d);min-width:60px;text-align:right}
+.slider-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-light);padding:0 2px}
+.slider-desc{font-size:13px;color:var(--ink-mid);margin-top:8px;padding:8px 12px;background:var(--code);border-radius:8px;border:1px solid var(--border-d)}
+/* field */
+.field{margin-bottom:15px}
+.field input{width:100%;padding:9px 13px;border:1px solid var(--border-d);border-radius:8px;font-size:14px;background:#fff;color:var(--ink);outline:none;transition:border-color .15s;font-family:"DM Sans",sans-serif}
+.field input:focus{border-color:var(--teal)}.field .hint{font-size:12px;color:var(--ink-light);margin-top:4px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;border:none;text-decoration:none;font-family:"DM Sans",sans-serif;transition:all .15s}
+.btn-p{background:var(--teal);color:#fff}.btn-p:hover{background:var(--teal-d)}
+.btn-o{background:#fff;color:var(--ink-mid);border:1px solid var(--border-d)}.btn-o:hover{border-color:var(--teal);color:var(--teal-d);background:var(--teal-l)}
+.btn-sm{padding:6px 12px;font-size:12.5px;border-radius:6px}
+.frow{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--code);border:1px solid var(--border-d);border-radius:10px;margin-bottom:8px;gap:12px}
+.fname{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;color:var(--ink)}
+.fdesc{font-size:12px;color:var(--ink-light);margin-top:2px}
+.stbl{width:100%;border-collapse:collapse}
+.stbl th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-light);padding:0 10px 10px}
+.stbl td{padding:9px 10px;border-top:1px solid var(--border);vertical-align:middle}
+.sname{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;color:var(--ink)}
+.sval{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-light);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sval.ok{color:var(--teal-d)}
+.cbtn{background:none;border:1px solid var(--border-d);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--ink-light);font-family:"DM Sans",sans-serif;transition:all .15s}
+.cbtn:hover{border-color:var(--teal);color:var(--teal-d)}.cbtn.ck{border-color:var(--green);color:var(--green)}.cbtn:disabled{opacity:.35;cursor:default}
+.done-row{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);cursor:pointer}
+.dbox{width:20px;height:20px;border:2px solid var(--border-d);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:12px;color:#fff}
+.dbox.on{background:var(--teal);border-color:var(--teal)}.dlabel{font-size:13.5px;font-weight:500;color:var(--ink-light)}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.success{background:var(--green-l);border:1px solid var(--green-m);border-radius:14px;padding:24px;text-align:center;display:none;margin-top:8px}
+.success.show{display:block}
+.success h3{font-family:"Lora",serif;font-size:22px;color:#15803d;margin-bottom:6px}
+.success p{font-size:14px;color:#166534;line-height:1.6}
+code{font-family:"JetBrains Mono",monospace;font-size:12.5px;background:var(--code);padding:1px 5px;border-radius:4px;color:var(--teal-d)}
+strong{font-weight:600}
 </style>
 </head>
 <body>
-
 <textarea id="F-checker-py" style="display:none">import json
 import os
 import re
@@ -147,6 +117,9 @@ ADZUNA_APP_ID   = os.environ["ADZUNA_APP_ID"].replace("\xa0", "").strip()
 ADZUNA_APP_KEY  = os.environ["ADZUNA_APP_KEY"].replace("\xa0", "").strip()
 SEEN_FILE       = "seen_jobs.json"
 
+BLACKLIST   = [b.lower().strip() for b in config.get("blacklist", [])]
+MAX_YEARS   = int(config.get("max_years_experience", 2))   # 0 = no filter
+
 # - State helpers -------------------------------
 def load_seen() -> set[Any]:
     if Path(SEEN_FILE).exists():
@@ -169,14 +142,14 @@ def fetch_jobs(keyword: str) -> list[dict[str, Any]]:
         "sort_by":          "date",
         "max_days_old":     3,
     })
-    url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?{params}"
+    url = "https://api.adzuna.com/v1/api/jobs/us/search/1?" + params
 
     req = urllib.request.Request(url, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data: dict[str, Any] = json.loads(resp.read())
     except Exception as e:
-        print(f"  !!!  Adzuna request failed for '{keyword}': {e}")
+        print("  !!!  Adzuna request failed for '" + keyword + "': " + str(e))
         return []
 
     jobs: list[dict[str, Any]] = []
@@ -193,53 +166,107 @@ def fetch_jobs(keyword: str) -> list[dict[str, Any]]:
         })
     return jobs
 
+# - Filtering -----------------------------------
+def max_years_in_text(text: str) -> int:
+    """Return the highest year requirement found in text, or 0 if none."""
+    t = text.lower()
+    best = 0
+    # "5+ years experience", "5 years of experience", "5 years exp"
+    for m in re.finditer(r'(\d+)\+?\s*(?:-\s*\d+\s*)?years?\s*(?:of\s*)?(?:experience|exp\b)', t):
+        best = max(best, int(m.group(1)))
+    # "minimum 5 years", "at least 3 years", "requires 4 years"
+    for m in re.finditer(r'(?:minimum|at least|requires?)\s+(\d+)\+?\s*years?', t):
+        best = max(best, int(m.group(1)))
+    return best
+
+SENIOR_TITLE_RE = re.compile(
+    r'\b(senior|sr\.?|lead|principal|staff\s+engineer|director|manager)\b', re.I
+)
+
+def should_filter(job: dict[str, Any]) -> tuple[bool, str]:
+    """Returns (filter_out, reason). Checks blacklist then experience."""
+    company = job.get("company", "").lower()
+    title   = job.get("title",   "").lower()
+    desc    = job.get("excerpt", "").lower()
+
+    # -- Company blacklist --
+    for b in BLACKLIST:
+        if b in company:
+            return True, "blacklisted: " + job["company"]
+
+    # -- Experience filter (skip if MAX_YEARS == 0) --
+    if MAX_YEARS > 0:
+        years = max_years_in_text(title + " " + desc)
+        if years > MAX_YEARS:
+            return True, str(years) + "+ yrs required (max " + str(MAX_YEARS) + ")"
+
+        # For entry-level settings (<= 2 yrs), also block obvious senior titles
+        if MAX_YEARS <= 2 and SENIOR_TITLE_RE.search(title):
+            return True, "senior title: " + job["title"]
+
+    return False, ""
+
 # - Build notification email -------------------------
 def send_email(jobs: list[dict[str, Any]]) -> None:
     count   = len(jobs)
-    subject = f"[!]{count} new job{'s' if count > 1 else ''} - {datetime.now().strftime('%b %d, %Y')}"
+    subject = "[!] " + str(count) + " new job" + ("s" if count > 1 else "") + " - " + datetime.now().strftime("%b %d, %Y")
 
-    # Plain text
     lines = [subject, ""]
     for j in jobs:
-        lines += [j["title"], f"  {j['company']}  ~  {j['location']}",
-                  f"  Keyword: {j['keyword']}", f"  {j['link']}", ""]
+        lines += [j["title"], "  " + j["company"] + "  ~  " + j["location"],
+                  "  Keyword: " + j["keyword"], "  " + j["link"], ""]
     plain = "\n".join(lines)
 
-    # HTML cards
     cards = ""
     for j in jobs:
         excerpt = re.sub(r"<[^>]+>", "", str(j["excerpt"])).strip()
         if excerpt and not excerpt.endswith("..."):
             excerpt += "..."
-        company_loc = "     ".join(filter(None, [j["company"], j["location"]]))
-        cards += f"""
-        <div style="border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px;
-                    margin-bottom:14px;background:#fff;">
-          <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;
-                    letter-spacing:.06em;">via "{j['keyword']}"</p>
-          <h3 style="margin:0 0 4px;font-size:16px;color:#111827;line-height:1.35;">{j['title']}</h3>
-          {"<p style='margin:0 0 10px;font-size:12px;color:#6b7280;'>"+company_loc+"</p>" if company_loc else ""}
-          {"<p style='margin:0 0 12px;font-size:13px;color:#374151;line-height:1.5;'>"+excerpt+"</p>" if excerpt else ""}
-          <a href="{j['link']}" style="display:inline-block;background:#1A56B0;color:#fff;
-             padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;">
-            View job ->
-          </a>
-        </div>"""
+        company_loc = "   ".join(filter(None, [j["company"], j["location"]]))
+        card = (
+            "&lt;div style='border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px;"
+            "margin-bottom:14px;background:#fff;'&gt;"
+            "&lt;p style='margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;"
+            "letter-spacing:.06em;'&gt;via \"" + j["keyword"] + "\"&lt;/p&gt;"
+            "&lt;h3 style='margin:0 0 4px;font-size:16px;color:#111827;line-height:1.35;'&gt;"
+            + j["title"] + "&lt;/h3&gt;"
+        )
+        if company_loc:
+            card += "&lt;p style='margin:0 0 10px;font-size:12px;color:#6b7280;'&gt;"
+                      + company_loc +
+                      "&lt;/p&gt;"
+        if excerpt:
+            card += (
+                "&lt;p style='margin:0 0 12px;font-size:13px;color:#374151;line-height:1.5;'&gt;"
+                + excerpt +
+                "&lt;/p&gt;"
+            )
+        card += (
+            "&lt;a href='" + j["link"] + "' style='display:inline-block;background:#1A56B0;color:#fff;"
+            "padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;'&gt;"
+            "View job -&gt;&lt;/a&gt;&lt;/div&gt;"
+        )
+        cards += card
 
-    html = f"""<!DOCTYPE html><html>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;">
-  <div style="max-width:580px;margin:32px auto;padding:0 16px 40px;">
-    <div style="background:#1A56B0;border-radius:10px;padding:24px 28px;margin-bottom:24px;">
-      <h2 style="margin:0;color:#fff;font-size:22px;">[!]{count} new job{'s' if count > 1 else ''} found</h2>
-      <p style="margin:6px 0 0;color:#bfdbfe;font-size:13px;">
-        {datetime.now().strftime('%B %d, %Y at %H:%M UTC')} ~via Adzuna</p>
-    </div>
-    {cards}
-    <p style="text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;">
-      Edit <code>config.json</code> in your repo to change keywords or location.
-    </p>
-  </div>
-</body></html>"""
+    html = (
+        "&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style='margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;'&gt;"
+        "&lt;div style='max-width:580px;margin:32px auto;padding:0 16px 40px;'&gt;"
+        "&lt;div style='background:#1A56B0;border-radius:10px;padding:24px 28px;margin-bottom:24px;'&gt;"
+        "&lt;h2 style='margin:0;color:#fff;font-size:22px;'&gt;[!] "
+        + str(count)
+        + " new job"
+        + ("s" if count > 1 else "")
+        + " found&lt;/h2&gt;"
+        "&lt;p style='margin:6px 0 0;color:#bfdbfe;font-size:13px;'&gt;"
+        + datetime.now().strftime("%B %d, %Y at %H:%M UTC")
+        + " via Adzuna&lt;/p&gt;"
+        "&lt;/div&gt;"
+        + cards +
+        "&lt;p style='text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;'&gt;"
+        "Edit config.json in your repo to change keywords, blacklist, or experience filter."
+        "&lt;/p&gt;"
+        "&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;"
+    )
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -252,22 +279,32 @@ def send_email(jobs: list[dict[str, Any]]) -> None:
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
         server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
 
-    print(f"['V'] Email sent - {count} jobs")
+    print("['V'] Email sent - " + str(count) + " jobs")
 
 # - Main -----------------------------------
 def main():
-    seen: set[Any] = load_seen()
+    seen: set[Any]           = load_seen()
     new_jobs: list[dict[str, Any]] = []
+    skipped                  = 0
+
+    print("Config: max_years=" + str(MAX_YEARS) + ", blacklist=" + str(BLACKLIST))
 
     for keyword in config["keywords"]:
         jobs = fetch_jobs(keyword)
-        print(f"  '{keyword}' -> {len(jobs)} results")
+        print("  '" + keyword + "' -> " + str(len(jobs)) + " results")
         for job in jobs:
-            if job["id"] not in seen:
+            if job["id"] in seen:
+                continue
+            filtered, reason = should_filter(job)
+            if filtered:
+                print("    [skip] " + job["title"] + " | " + reason)
+                skipped += 1
+                seen.add(job["id"])   # mark seen so it is not re-checked
+            else:
                 new_jobs.append(job)
                 seen.add(job["id"])
 
-    print(f"\n{len(new_jobs)} new (unseen) jobs found")
+    print("\n" + str(len(new_jobs)) + " new jobs, " + str(skipped) + " filtered out")
 
     if new_jobs:
         send_email(new_jobs)
@@ -277,7 +314,8 @@ def main():
     save_seen(seen)
 
 if __name__ == "__main__":
-    main()</textarea>
+    main()
+</textarea>
 <textarea id="F-checker-yml" style="display:none">name: Job Alert Checker
 
 on:
@@ -319,9 +357,9 @@ jobs:
 
 <header class="header">
   <div class="logo">Job Alert <span>Bot</span></div>
-  <div class="progress-wrap">
-    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-    <div class="prog-label" id="prog-label">0 / 6 steps</div>
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
+    <div class="prog-label" id="pl">0 / 6 steps</div>
   </div>
 </header>
 
@@ -329,343 +367,229 @@ jobs:
 
 <!-- Step 1 -->
 <div class="card" id="S1">
-  <div class="card-head" onclick="toggle(1)">
-    <div class="step-num" id="N1">1</div>
-    <div class="head-text">
-      <div class="step-title">Configure your job search</div>
-      <div class="step-sub">Set keywords and location, then download config.json</div>
-    </div>
-    <div class="chevron open" id="C1">&#9660;</div>
+  <div class="card-head" onclick="tog(1)">
+    <div class="snum" id="N1">1</div>
+    <div class="htext"><div class="stitle">Configure your job search</div><div class="ssub">Set keywords, filters, and location &mdash; then download config.json</div></div>
+    <div class="chev open" id="C1">&#9660;</div>
   </div>
-  <div class="card-body" id="B1">
-    <div class="card-divider"></div>
-    <span class="field-label">Keywords</span>
-    <div class="kw-tags" id="kw-tags"></div>
-    <div class="add-row" style="margin-bottom:18px">
-      <input type="text" id="kw-inp" placeholder="Type a keyword and press Enter  e.g. junior developer remote" />
-      <button class="btn btn-outline btn-sm" onclick="addKw()">+ Add</button>
+  <div class="cbody" id="B1">
+    <div class="cdiv"></div>
+
+    <!-- Keywords -->
+    <span class="flabel">Keywords</span>
+    <div class="tag-wrap" id="kw-tags"></div>
+    <div class="add-row">
+      <input type="text" id="kw-inp" placeholder='e.g. "junior developer remote"  then press Enter' />
+      <button class="btn btn-o btn-sm" onclick="addKw()">+ Add</button>
     </div>
+
+    <!-- Experience slider -->
+    <div class="slider-wrap">
+      <span class="flabel">Max experience required</span>
+      <div class="slider-row">
+        <input type="range" id="exp-slider" min="0" max="5" value="2" oninput="updateSlider()" />
+        <div class="slider-val" id="exp-val">2 yrs</div>
+      </div>
+      <div class="slider-labels">
+        <span>Off</span><span>1 yr</span><span>2 yrs</span><span>3 yrs</span><span>4 yrs</span><span>5 yrs</span>
+      </div>
+      <div class="slider-desc" id="exp-desc"></div>
+    </div>
+
+    <!-- Blacklist -->
+    <span class="flabel">Company blacklist <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;color:var(--ink-light)">&mdash; jobs from these companies will be skipped</span></span>
+    <div class="tag-wrap" id="bl-tags"><span style="font-size:12px;color:var(--ink-light);align-self:center;padding:2px 4px">None added yet</span></div>
+    <div class="add-row">
+      <input type="text" id="bl-inp" placeholder='e.g. "Amazon"  then press Enter' />
+      <button class="btn btn-o btn-sm" onclick="addBl()">+ Add</button>
+    </div>
+
+    <!-- Location -->
     <div class="field">
-      <span class="field-label">Location</span>
+      <span class="flabel">Location</span>
       <input type="text" id="loc" value="United States" />
-      <div class="hint">Use "United States" for nationwide, or a city like "San Francisco" for local results</div>
+      <div class="hint">Nationwide: "United States" &mdash; or narrow it: "San Francisco", "New York"</div>
     </div>
-    <button class="btn btn-primary" onclick="dlConfig()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      Download config.json
+
+    <button class="btn btn-p" onclick="dlConfig()">
+      &#8595; Download config.json
     </button>
-    <div class="done-row" onclick="markDone(1)">
-      <div class="done-box" id="D1"></div>
-      <div class="done-text">Done &mdash; config.json downloaded and added to my repo</div>
-    </div>
+    <div class="done-row" onclick="md(1)"><div class="dbox" id="D1"></div><div class="dlabel">Done &mdash; config.json downloaded and added to my repo</div></div>
   </div>
 </div>
 
 <!-- Step 2 -->
 <div class="card" id="S2">
-  <div class="card-head" onclick="toggle(2)">
-    <div class="step-num" id="N2">2</div>
-    <div class="head-text">
-      <div class="step-title">Get a free Adzuna API key</div>
-      <div class="step-sub">Takes about 2 minutes &mdash; free account, no credit card</div>
-    </div>
-    <div class="chevron" id="C2">&#9660;</div>
+  <div class="card-head" onclick="tog(2)">
+    <div class="snum" id="N2">2</div>
+    <div class="htext"><div class="stitle">Get a free Adzuna API key</div><div class="ssub">Takes about 2 minutes &mdash; free account, no credit card</div></div>
+    <div class="chev" id="C2">&#9660;</div>
   </div>
-  <div class="card-body" id="B2" style="display:none">
-    <div class="card-divider"></div>
+  <div class="cbody" id="B2" style="display:none">
+    <div class="cdiv"></div>
     <ol class="inst">
       <li>Go to <a href="https://developer.adzuna.com/signup" target="_blank">developer.adzuna.com/signup</a> and create a free account</li>
       <li>After logging in, click <strong>Create App</strong> &mdash; name it anything like <code>job-bot</code></li>
-      <li>Copy your <strong>App ID</strong> and <strong>API Key</strong> from the dashboard and paste them below</li>
+      <li>Copy your <strong>App ID</strong> and <strong>API Key</strong> and paste them below</li>
     </ol>
     <div class="divider"></div>
     <div class="two-col">
-      <div class="field">
-        <span class="field-label">Adzuna App ID</span>
-        <input type="text" id="az-id" placeholder="e.g. a1b2c3d4" oninput="refreshSecrets()" />
-      </div>
-      <div class="field">
-        <span class="field-label">Adzuna API Key</span>
-        <input type="text" id="az-key" placeholder="e.g. e5f6g7h8i9..." oninput="refreshSecrets()" />
-      </div>
+      <div class="field"><span class="flabel">Adzuna App ID</span><input type="text" id="az-id" placeholder="e.g. a1b2c3d4" oninput="rs()" /></div>
+      <div class="field"><span class="flabel">Adzuna API Key</span><input type="text" id="az-key" placeholder="e.g. e5f6g7h8..." oninput="rs()" /></div>
     </div>
-    <div class="done-row" onclick="markDone(2)">
-      <div class="done-box" id="D2"></div>
-      <div class="done-text">Done &mdash; I have my App ID and API Key</div>
-    </div>
+    <div class="done-row" onclick="md(2)"><div class="dbox" id="D2"></div><div class="dlabel">Done &mdash; I have my App ID and API Key</div></div>
   </div>
 </div>
 
 <!-- Step 3 -->
 <div class="card" id="S3">
-  <div class="card-head" onclick="toggle(3)">
-    <div class="step-num" id="N3">3</div>
-    <div class="head-text">
-      <div class="step-title">Create a Gmail App Password</div>
-      <div class="step-sub">Your regular Gmail password won&apos;t work &mdash; you need a special app password</div>
-    </div>
-    <div class="chevron" id="C3">&#9660;</div>
+  <div class="card-head" onclick="tog(3)">
+    <div class="snum" id="N3">3</div>
+    <div class="htext"><div class="stitle">Create a Gmail App Password</div><div class="ssub">Your regular Gmail password won&apos;t work &mdash; you need a special app password</div></div>
+    <div class="chev" id="C3">&#9660;</div>
   </div>
-  <div class="card-body" id="B3" style="display:none">
-    <div class="card-divider"></div>
-    <div class="warn-box"><strong>Before you start:</strong> 2-Step Verification must be ON in your Google account or the App Passwords option won&apos;t appear.</div>
+  <div class="cbody" id="B3" style="display:none">
+    <div class="cdiv"></div>
+    <div class="warn"><strong>Before you start:</strong> 2-Step Verification must be ON in your Google account or the App Passwords option won&apos;t appear.</div>
     <ol class="inst">
       <li>Go to <a href="https://myaccount.google.com/security" target="_blank">myaccount.google.com/security</a> and confirm 2-Step Verification is ON</li>
-      <li>In the search bar at the top of your Google account page, search <strong>&ldquo;App Passwords&rdquo;</strong> and click the result</li>
+      <li>Search <strong>&ldquo;App Passwords&rdquo;</strong> in the search bar at the top of your Google account page</li>
       <li>Type a name like <code>job-bot</code> then click <strong>Create</strong></li>
-      <li>Copy the 16-character password &mdash; it only shows once, so don&apos;t close the window yet</li>
+      <li>Copy the 16-character password &mdash; it only shows once!</li>
     </ol>
     <div class="divider"></div>
     <div class="two-col">
-      <div class="field">
-        <span class="field-label">Your Gmail address</span>
-        <input type="email" id="g-from" placeholder="yourname@gmail.com" oninput="refreshSecrets()" />
-        <div class="hint">Used as the sender (EMAIL_FROM)</div>
-      </div>
-      <div class="field">
-        <span class="field-label">App Password</span>
-        <input type="text" id="g-pass" placeholder="abcd efgh ijkl mnop" oninput="refreshSecrets()" />
-        <div class="hint">The 16-character code from Google</div>
-      </div>
+      <div class="field"><span class="flabel">Your Gmail address</span><input type="email" id="g-from" placeholder="yourname@gmail.com" oninput="rs()" /><div class="hint">Used as sender (EMAIL_FROM)</div></div>
+      <div class="field"><span class="flabel">App Password</span><input type="text" id="g-pass" placeholder="abcd efgh ijkl mnop" oninput="rs()" /><div class="hint">The 16-char code from Google</div></div>
     </div>
-    <div class="field">
-      <span class="field-label">Send alerts to (EMAIL_TO)</span>
-      <input type="email" id="g-to" placeholder="Can be the same Gmail or a different address" oninput="refreshSecrets()" />
-    </div>
-    <div class="done-row" onclick="markDone(3)">
-      <div class="done-box" id="D3"></div>
-      <div class="done-text">Done &mdash; I have my Gmail address and App Password</div>
-    </div>
+    <div class="field"><span class="flabel">Send alerts to (EMAIL_TO)</span><input type="email" id="g-to" placeholder="Same Gmail or a different address" oninput="rs()" /></div>
+    <div class="done-row" onclick="md(3)"><div class="dbox" id="D3"></div><div class="dlabel">Done &mdash; I have my Gmail and App Password</div></div>
   </div>
 </div>
 
 <!-- Step 4 -->
 <div class="card" id="S4">
-  <div class="card-head" onclick="toggle(4)">
-    <div class="step-num" id="N4">4</div>
-    <div class="head-text">
-      <div class="step-title">Create a GitHub repo and upload files</div>
-      <div class="step-sub">Download all 4 files below, then upload to a new private repo</div>
-    </div>
-    <div class="chevron" id="C4">&#9660;</div>
+  <div class="card-head" onclick="tog(4)">
+    <div class="snum" id="N4">4</div>
+    <div class="htext"><div class="stitle">Create a GitHub repo and upload files</div><div class="ssub">Download all 4 files, then upload to a new private repo</div></div>
+    <div class="chev" id="C4">&#9660;</div>
   </div>
-  <div class="card-body" id="B4" style="display:none">
-    <div class="card-divider"></div>
-    <div class="info-box"><strong>First:</strong> Create a new <strong>private</strong> repo at <a href="https://github.com/new" target="_blank">github.com/new</a> &mdash; name it something like <code>job-alert-bot</code>. Then download and upload all 4 files below.</div>
-    <p style="font-size:13.5px;color:var(--ink-mid);margin-bottom:14px;line-height:1.6">The workflow file goes in a <code>.github/workflows/</code> folder &mdash; type that path when uploading on GitHub (Add file &rarr; Upload files, then type the path in the filename box).</p>
-    <div class="file-row">
-      <div class="file-info">
-        <div class="file-name">checker.py</div>
-        <div class="file-desc">Main script &mdash; fetches jobs from Adzuna and sends the email</div>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="dlFile('checker.py')">&#8595; Download</button>
-    </div>
-    <div class="file-row">
-      <div class="file-info">
-        <div class="file-name">config.json</div>
-        <div class="file-desc">Your keywords and location (also downloadable from Step 1)</div>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="dlConfig()">&#8595; Download</button>
-    </div>
-    <div class="file-row">
-      <div class="file-info">
-        <div class="file-name">.github/workflows/checker.yml</div>
-        <div class="file-desc">Tells GitHub Actions to run the bot twice daily</div>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="dlFile('checker.yml')">&#8595; Download</button>
-    </div>
-    <div class="file-row">
-      <div class="file-info">
-        <div class="file-name">seen_jobs.json</div>
-        <div class="file-desc">Starts empty &mdash; bot fills this automatically to avoid duplicates</div>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="dlSeen()">&#8595; Download</button>
-    </div>
-    <div class="done-row" onclick="markDone(4)">
-      <div class="done-box" id="D4"></div>
-      <div class="done-text">Done &mdash; all 4 files are in my GitHub repo</div>
-    </div>
+  <div class="cbody" id="B4" style="display:none">
+    <div class="cdiv"></div>
+    <div class="info"><strong>First:</strong> Create a new <strong>private</strong> repo at <a href="https://github.com/new" target="_blank">github.com/new</a> &mdash; name it something like <code>job-alert-bot</code>. Then download and upload all 4 files.</div>
+    <p style="font-size:13.5px;color:var(--ink-mid);margin-bottom:14px;line-height:1.6">The workflow file goes inside a <code>.github/workflows/</code> folder &mdash; type that path when uploading.</p>
+    <div class="frow"><div><div class="fname">checker.py</div><div class="fdesc">Main script &mdash; fetches, filters, and emails jobs</div></div><button class="btn btn-o btn-sm" onclick="dlF('checker.py')">&#8595; Download</button></div>
+    <div class="frow"><div><div class="fname">config.json</div><div class="fdesc">Keywords, filters, location (also in Step 1)</div></div><button class="btn btn-o btn-sm" onclick="dlConfig()">&#8595; Download</button></div>
+    <div class="frow"><div><div class="fname">.github/workflows/checker.yml</div><div class="fdesc">Tells GitHub Actions to run the bot twice daily</div></div><button class="btn btn-o btn-sm" onclick="dlF('checker.yml')">&#8595; Download</button></div>
+    <div class="frow"><div><div class="fname">seen_jobs.json</div><div class="fdesc">Starts empty &mdash; bot fills this to avoid duplicates</div></div><button class="btn btn-o btn-sm" onclick="dlSeen()">&#8595; Download</button></div>
+    <div class="done-row" onclick="md(4)"><div class="dbox" id="D4"></div><div class="dlabel">Done &mdash; all 4 files are in my GitHub repo</div></div>
   </div>
 </div>
 
 <!-- Step 5 -->
 <div class="card" id="S5">
-  <div class="card-head" onclick="toggle(5)">
-    <div class="step-num" id="N5">5</div>
-    <div class="head-text">
-      <div class="step-title">Add secrets to GitHub</div>
-      <div class="step-sub">5 secrets total &mdash; values auto-fill from what you entered above</div>
-    </div>
-    <div class="chevron" id="C5">&#9660;</div>
+  <div class="card-head" onclick="tog(5)">
+    <div class="snum" id="N5">5</div>
+    <div class="htext"><div class="stitle">Add secrets to GitHub</div><div class="ssub">5 secrets total &mdash; values auto-fill from what you entered above</div></div>
+    <div class="chev" id="C5">&#9660;</div>
   </div>
-  <div class="card-body" id="B5" style="display:none">
-    <div class="card-divider"></div>
-    <div class="info-box">In your repo: <strong>Settings &rarr; Secrets and variables &rarr; Actions &rarr; New repository secret</strong>. Add each row below one at a time.</div>
-    <table class="sec-table">
-      <thead><tr><th>Secret name (copy exactly)</th><th>Value to paste</th><th></th></tr></thead>
-      <tbody id="sec-body"></tbody>
-    </table>
-    <div class="done-row" onclick="markDone(5)">
-      <div class="done-box" id="D5"></div>
-      <div class="done-text">Done &mdash; all 5 secrets added to GitHub</div>
-    </div>
+  <div class="cbody" id="B5" style="display:none">
+    <div class="cdiv"></div>
+    <div class="info">In your repo go to <strong>Settings &rarr; Secrets and variables &rarr; Actions &rarr; New repository secret</strong> and add each row below.</div>
+    <table class="stbl"><thead><tr><th>Secret name</th><th>Value to paste</th><th></th></tr></thead><tbody id="sb"></tbody></table>
+    <div class="done-row" onclick="md(5)"><div class="dbox" id="D5"></div><div class="dlabel">Done &mdash; all 5 secrets added</div></div>
   </div>
 </div>
 
 <!-- Step 6 -->
 <div class="card" id="S6">
-  <div class="card-head" onclick="toggle(6)">
-    <div class="step-num" id="N6">6</div>
-    <div class="head-text">
-      <div class="step-title">Run the bot!</div>
-      <div class="step-sub">Trigger a test run and wait for your first email</div>
-    </div>
-    <div class="chevron" id="C6">&#9660;</div>
+  <div class="card-head" onclick="tog(6)">
+    <div class="snum" id="N6">6</div>
+    <div class="htext"><div class="stitle">Run the bot!</div><div class="ssub">Trigger a test run and check your inbox</div></div>
+    <div class="chev" id="C6">&#9660;</div>
   </div>
-  <div class="card-body" id="B6" style="display:none">
-    <div class="card-divider"></div>
+  <div class="cbody" id="B6" style="display:none">
+    <div class="cdiv"></div>
     <ol class="inst">
-      <li>In your GitHub repo, click the <strong>Actions</strong> tab at the top</li>
+      <li>In your GitHub repo, click the <strong>Actions</strong> tab</li>
       <li>Click <strong>Job Alert Checker</strong> in the left sidebar</li>
-      <li>Click the <strong>Run workflow</strong> dropdown &rarr; green <strong>Run workflow</strong> button</li>
-      <li>Wait about 30&ndash;60 seconds, then check your inbox</li>
+      <li>Click <strong>Run workflow &rarr; Run workflow</strong> (green button)</li>
+      <li>Wait ~30 seconds then check your inbox. The Actions log will also show which jobs were skipped and why.</li>
     </ol>
-    <div class="info-box" style="margin-top:16px">
-      The first run emails everything matching your keywords from the past 3 days. After that, you only get an email when new jobs appear. The bot runs automatically at <strong>9am and 5pm UTC</strong> every day.
-    </div>
-    <div class="done-row" onclick="markDone(6)">
-      <div class="done-box" id="D6"></div>
-      <div class="done-text">Done &mdash; I got my first email!</div>
-    </div>
+    <div class="info" style="margin-top:16px">First run emails everything from the past 3 days matching your keywords. The log will print lines like <code>[skip] Senior SWE | senior title</code> so you can see the filters working. After that, only new jobs trigger emails.</div>
+    <div class="done-row" onclick="md(6)"><div class="dbox" id="D6"></div><div class="dlabel">Done &mdash; I got my first email!</div></div>
   </div>
 </div>
 
-<div class="success" id="success-banner">
+<div class="success" id="succ">
   <h3>You&apos;re all set!</h3>
-  <p>The bot checks for new jobs twice a day and emails you when it finds something new.<br>
-  To change keywords later, just edit <code>config.json</code> directly in your GitHub repo.</p>
+  <p>The bot checks twice a day and emails you only when new jobs appear.<br>Edit <code>config.json</code> directly in GitHub any time to update keywords, blacklist, or the experience filter.</p>
 </div>
-
-</div><!-- /container -->
+</div>
 
 <script>
-const DEFAULT_KWS = [
-  "entry level software engineer",
-  "associate software engineer",
-  "junior software engineer",
-  "new grad software engineer",
-  "junior developer",
-  "software engineer Japanese bilingual",
-  "entry level developer"
-];
-let kws = [...DEFAULT_KWS];
-let doneSteps = {};
+var kws=["entry level software engineer","associate software engineer","junior software engineer","new grad software engineer","junior developer","software engineer Japanese bilingual","entry level developer"];
+var bls=[];
+var done={};
 
-// Keywords
-function renderKws() {
-  const w = document.getElementById("kw-tags");
-  w.innerHTML = "";
-  kws.forEach((k, i) => {
-    const t = document.createElement("div");
-    t.className = "kw-tag";
-    t.innerHTML = "<span>" + k + "</span><button onclick='rmKw(" + i + ")' title='Remove'>&times;</button>";
-    w.appendChild(t);
-  });
+var SLIDER_DESCS={
+  "0":"No filter &mdash; all experience levels included",
+  "1":"Up to 1 year &mdash; internships and very new grad roles only",
+  "2":"Up to 2 years &mdash; entry level / new grad <strong>(recommended)</strong>",
+  "3":"Up to 3 years &mdash; early career roles",
+  "4":"Up to 4 years &mdash; junior to mid-level",
+  "5":"Up to 5 years &mdash; broader search including some mid-level"
+};
+
+function renderTags(arr,wrId,rmFn,cls){
+  var w=document.getElementById(wrId);w.innerHTML="";
+  if(!arr.length){w.innerHTML="<span style='font-size:12px;color:var(--ink-light);align-self:center;padding:2px 4px'>None added</span>";return;}
+  arr.forEach(function(k,i){var t=document.createElement("div");t.className="tag-item"+(cls?" "+cls:"");t.innerHTML="<span>"+k+"</span><button onclick='"+rmFn+"("+i+")' title='Remove'>&times;</button>";w.appendChild(t);});
 }
-function addKw() {
-  const inp = document.getElementById("kw-inp");
-  const v = inp.value.trim();
-  if (v && !kws.includes(v)) { kws.push(v); renderKws(); }
-  inp.value = ""; inp.focus();
+function renderKws(){renderTags(kws,"kw-tags","rmKw","");}
+function renderBls(){renderTags(bls,"bl-tags","rmBl","bl");}
+
+function addKw(){var i=document.getElementById("kw-inp"),v=i.value.trim();if(v&&!kws.includes(v)){kws.push(v);renderKws();}i.value="";i.focus();}
+function rmKw(i){kws.splice(i,1);renderKws();}
+function addBl(){var i=document.getElementById("bl-inp"),v=i.value.trim();if(v&&!bls.includes(v)){bls.push(v);renderBls();}i.value="";i.focus();}
+function rmBl(i){bls.splice(i,1);renderBls();}
+
+function updateSlider(){
+  var v=document.getElementById("exp-slider").value;
+  document.getElementById("exp-val").textContent=v=="0"?"Off":v+" yr"+(v=="1"?"":"s");
+  document.getElementById("exp-desc").innerHTML=SLIDER_DESCS[v]||"";
 }
-function rmKw(i) { kws.splice(i, 1); renderKws(); }
-document.addEventListener("DOMContentLoaded", function() {
-  document.getElementById("kw-inp").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") addKw();
-  });
-  renderKws();
-  refreshSecrets();
+
+function dlBlob(name,content,mime){var b=new Blob([content],{type:mime||"text/plain"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+
+function dlConfig(){
+  var loc=document.getElementById("loc").value.trim()||"United States";
+  var exp=parseInt(document.getElementById("exp-slider").value);
+  dlBlob("config.json",JSON.stringify({keywords:kws,location:loc,blacklist:bls,max_years_experience:exp},null,2),"application/json");
+}
+function dlF(n){dlBlob(n,document.getElementById(n==="checker.py"?"F-checker-py":"F-checker-yml").value,"text/plain");}
+function dlSeen(){dlBlob("seen_jobs.json","[]","application/json");}
+
+var SK=["EMAIL_FROM","EMAIL_PASSWORD","EMAIL_TO","ADZUNA_APP_ID","ADZUNA_APP_KEY"];
+function getV(){return{EMAIL_FROM:(document.getElementById("g-from")||{}).value||"",EMAIL_PASSWORD:(document.getElementById("g-pass")||{}).value||"",EMAIL_TO:(document.getElementById("g-to")||{}).value||"",ADZUNA_APP_ID:(document.getElementById("az-id")||{}).value||"",ADZUNA_APP_KEY:(document.getElementById("az-key")||{}).value||""};}
+function rs(){
+  var v=getV(),tb=document.getElementById("sb");if(!tb)return;tb.innerHTML="";
+  SK.forEach(function(k){var val=v[k].trim(),f=!!val,disp=f?val:"(fill in steps 2-3 above)";
+    var tr=document.createElement("tr");
+    tr.innerHTML="<td><span class='sname'>"+k+"</span></td><td><span class='sval"+(f?" ok":"")+"'>"+(f?val:"<em style='opacity:.5'>"+disp+"</em>")+"</span></td><td><button class='cbtn' id='CP-"+k+"' "+(f?"":"disabled")+" onclick='cs(\""+k+"\")'>"+( f?"Copy":"--")+"</button></td>";
+    tb.appendChild(tr);});
+}
+function cs(k){var v=getV()[k];if(!v)return;navigator.clipboard.writeText(v).then(function(){var b=document.getElementById("CP-"+k);b.textContent="Copied!";b.classList.add("ck");setTimeout(function(){b.textContent="Copy";b.classList.remove("ck");},2000);});}
+
+function tog(n){var b=document.getElementById("B"+n),c=document.getElementById("C"+n),open=b.style.display!=="none";b.style.display=open?"none":"block";c.classList.toggle("open",!open);}
+
+function md(n){done[n]=!done[n];var d=document.getElementById("D"+n),s=document.getElementById("S"+n),num=document.getElementById("N"+n);d.classList.toggle("on",done[n]);d.innerHTML=done[n]?"&#10003;":"";s.classList.toggle("done",done[n]);num.innerHTML=done[n]?"&#10003;":n;var t=Object.values(done).filter(Boolean).length;document.getElementById("pf").style.width=(t/6*100)+"%";document.getElementById("pl").textContent=t+" / 6 steps";document.getElementById("succ").classList.toggle("show",t===6);}
+
+document.addEventListener("DOMContentLoaded",function(){
+  document.getElementById("kw-inp").addEventListener("keydown",function(e){if(e.key==="Enter")addKw();});
+  document.getElementById("bl-inp").addEventListener("keydown",function(e){if(e.key==="Enter")addBl();});
+  renderKws();renderBls();updateSlider();rs();tog(1);
 });
-
-// Downloads
-function dlBlob(name, content, mime) {
-  const b = new Blob([content], { type: mime || "text/plain" });
-  const u = URL.createObjectURL(b);
-  const a = document.createElement("a");
-  a.href = u; a.download = name; a.click();
-  URL.revokeObjectURL(u);
-}
-function dlConfig() {
-  const loc = document.getElementById("loc").value.trim() || "United States";
-  dlBlob("config.json", JSON.stringify({ keywords: kws, location: loc }, null, 2), "application/json");
-}
-function dlFile(name) {
-  const id = name === "checker.py" ? "F-checker-py" : "F-checker-yml";
-  dlBlob(name, document.getElementById(id).value, "text/plain");
-}
-function dlSeen() { dlBlob("seen_jobs.json", "[]", "application/json"); }
-
-// Secrets
-const SECRET_KEYS = ["EMAIL_FROM","EMAIL_PASSWORD","EMAIL_TO","ADZUNA_APP_ID","ADZUNA_APP_KEY"];
-function getVals() {
-  return {
-    EMAIL_FROM:     (document.getElementById("g-from")||{}).value||"",
-    EMAIL_PASSWORD: (document.getElementById("g-pass")||{}).value||"",
-    EMAIL_TO:       (document.getElementById("g-to")||{}).value||"",
-    ADZUNA_APP_ID:  (document.getElementById("az-id")||{}).value||"",
-    ADZUNA_APP_KEY: (document.getElementById("az-key")||{}).value||""
-  };
-}
-function refreshSecrets() {
-  const v = getVals();
-  const tb = document.getElementById("sec-body");
-  if (!tb) return;
-  tb.innerHTML = "";
-  SECRET_KEYS.forEach(function(k) {
-    const val = v[k].trim();
-    const filled = !!val;
-    const display = filled ? val : "(fill in steps 2-3 above)";
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td><span class=\"sec-name\">" + k + "</span></td>" +
-      "<td><span class=\"sec-val" + (filled ? " filled" : "") + "\">" + (filled ? val : "<em style=\"opacity:.5\">" + display + "</em>") + "</span></td>" +
-      "<td><button class=\"copy-btn\" id=\"CP-" + k + "\" " + (filled ? "" : "disabled") + " onclick=\"copySec('" + k + "')\">" + (filled ? "Copy" : "--") + "</button></td>";
-    tb.appendChild(tr);
-  });
-}
-function copySec(k) {
-  const v = getVals()[k];
-  if (!v) return;
-  navigator.clipboard.writeText(v).then(function() {
-    const btn = document.getElementById("CP-" + k);
-    btn.textContent = "Copied!"; btn.classList.add("ok");
-    setTimeout(function() { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 2000);
-  });
-}
-
-// Step toggle
-function toggle(n) {
-  const b = document.getElementById("B" + n);
-  const c = document.getElementById("C" + n);
-  const open = b.style.display !== "none";
-  b.style.display = open ? "none" : "block";
-  c.classList.toggle("open", !open);
-}
-
-// Mark done
-function markDone(n) {
-  doneSteps[n] = !doneSteps[n];
-  const d = document.getElementById("D" + n);
-  const s = document.getElementById("S" + n);
-  const num = document.getElementById("N" + n);
-  d.classList.toggle("checked", doneSteps[n]);
-  d.innerHTML = doneSteps[n] ? "&#10003;" : "";
-  s.classList.toggle("done", doneSteps[n]);
-  num.innerHTML = doneSteps[n] ? "&#10003;" : n;
-  const total = Object.values(doneSteps).filter(Boolean).length;
-  document.getElementById("prog-fill").style.width = (total / 6 * 100) + "%";
-  document.getElementById("prog-label").textContent = total + " / 6 steps";
-  document.getElementById("success-banner").classList.toggle("show", total === 6);
-}
 </script>
 </body>
 </html>
