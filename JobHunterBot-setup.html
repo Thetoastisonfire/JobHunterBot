@@ -98,13 +98,17 @@ strong{font-weight:600}
 import os
 import re
 import smtplib
+import time
 import urllib.request
 import urllib.parse
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+
+from synonym_finder_v2.search.search_pipeline import get_synonyms
 
 # - Load config --------------------------------
 with open("config.json") as f:
@@ -115,10 +119,34 @@ EMAIL_PASSWORD  = os.environ["EMAIL_PASSWORD"].replace("\xa0", "").strip()
 EMAIL_TO        = os.environ["EMAIL_TO"].replace("\xa0", "").strip()
 ADZUNA_APP_ID   = os.environ["ADZUNA_APP_ID"].replace("\xa0", "").strip()
 ADZUNA_APP_KEY  = os.environ["ADZUNA_APP_KEY"].replace("\xa0", "").strip()
+CACHE_RESET_FILE = "last_cache_reset.txt"
+CACHE_RESET_TIMEFRAME = (14 * 24 * 60 * 60) # 2 weeks
 SEEN_FILE       = "seen_jobs.json"
 
 BLACKLIST   = [b.lower().strip() for b in config.get("blacklist", [])]
 MAX_YEARS   = int(config.get("max_years_experience", 2))   # 0 = no filter
+
+# - Keyword expansion ----------------------------
+# Lets you write one natural phrase (e.g. "entry level developer") instead of
+# hand-listing every wording a company might use. Each group below is a set
+# of interchangeable terms; if a keyword contains a term from a group, we
+# generate one variant per term in that group (cross-multiplied across all
+# groups that match). "entry level developer" -> "junior software engineer",
+# "new grad developer", "associate software developer", etc. automatically.
+MAX_SYNONYM: int = 10 # the amount of synonyms found from the vector search pipeline
+
+def expand_keyword(keyword: str, variant_set: set[str]) -> list[str]:
+    """Expand one keyword into every synonym-combination variant."""
+
+    # get X synonyms for the keyword, then check if any are already in the system
+    synonyms: list[str] = [s.lower() for s in get_synonyms(keyword, n=MAX_SYNONYM)]
+    
+    for synonym in synonyms: # for each synonym
+        if synonym in variant_set: # if its been used before
+            synonyms.remove(synonym) # remove it
+        else:
+            variant_set.add(synonym) # otherwise mark it as seen
+    return synonyms
 
 # - State helpers -------------------------------
 def load_seen() -> set[Any]:
@@ -129,15 +157,37 @@ def load_seen() -> set[Any]:
     return set()
 
 def save_seen(seen: set[Any]) -> None:
+    now = datetime.now()
+
+    reset_path = Path(CACHE_RESET_FILE)
+
+    should_clear = True
+    if reset_path.exists():
+        try:
+            last_reset = datetime.fromisoformat(reset_path.read_text().strip())
+            should_clear = now - last_reset >= timedelta(days=14)
+        except (ValueError, TypeError):
+            pass  # Empty or malformed file -> clear cache and rewrite timestamp
+
+    if should_clear:
+        seen.clear()  # Start fresh every 2 weeks
+        reset_path.write_text(now.isoformat())
+
     Path(SEEN_FILE).write_text(json.dumps(sorted(seen), indent=2))
 
 # - Fetch jobs from Adzuna API ----------------------
-def fetch_jobs(keyword: str) -> list[dict[str, Any]]:
+def fetch_jobs(keyword: str, label: str | None = None) -> list[dict[str, Any]]:
+    label = label or keyword
     params = urllib.parse.urlencode({
         "app_id":           ADZUNA_APP_ID,
         "app_key":          ADZUNA_APP_KEY,
         "results_per_page": 50,
-        "what":             keyword,
+        # what_phrase requires the exact phrase to appear (title/description),
+        # unlike "what" which loosely OR-matches individual words. This matters
+        # a lot here because sort_by=date disables relevance scoring, so with
+        # "what" a query like "entry level developer" can surface anything
+        # matching just "entry" or "level" (e.g. a Firefighter Recruit posting).
+        "what_phrase":      keyword,
         "where":            config.get("location", "United States"),
         "sort_by":          "date",
         "max_days_old":     3,
@@ -145,28 +195,60 @@ def fetch_jobs(keyword: str) -> list[dict[str, Any]]:
     url = "https://api.adzuna.com/v1/api/jobs/us/search/1?" + params
 
     req = urllib.request.Request(url, headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data: dict[str, Any] = json.loads(resp.read())
-    except Exception as e:
-        print("  !!!  Adzuna request failed for '" + keyword + "': " + str(e))
+    last_err: Exception | None = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data: dict[str, Any] = json.loads(resp.read())
+            break
+        except Exception as e:
+            last_err = e
+            if attempt &lt; 2:
+                time.sleep(2 * (attempt + 1))  # brief backoff, then retry
+    else:
+        print("  !!!  Adzuna request failed for '" + keyword + "' after retries: " + str(last_err))
         return []
 
     jobs: list[dict[str, Any]] = []
     for item in data.get("results", []):
+        redirect_url = item.get("redirect_url", "")
+        raw_id = item.get("id")
+        if raw_id:
+            job_id = str(raw_id)
+        else:
+            # Fall back to the stable numeric ad id embedded in the URL path
+            # (e.g. ".../land/ad/5787050712?se=...&v=..." -> "5787050712")
+            # rather than the full URL, whose query-string tracking tokens
+            # (se=, v=) change on every request and would otherwise make the
+            # same job look "new" on every run.
+            m = re.search(r'/ad/(\d+)', redirect_url) or re.search(r'/details/(\d+)', redirect_url)
+            job_id = m.group(1) if m else redirect_url.split("?", 1)[0]
+
         jobs.append({
-            "id":       str(item.get("id", item.get("redirect_url", ""))),
+            "id":       job_id,
             "title":    item.get("title", "Untitled"),
             "company":  item.get("company", {}).get("display_name", ""),
             "location": item.get("location", {}).get("display_name", ""),
             "link":     item.get("redirect_url", ""),
             "excerpt":  item.get("description", "")[:220].strip(),
             "date":     item.get("created", ""),
-            "keyword":  keyword,
+            "keyword":  label,
         })
     return jobs
 
 # - Filtering -----------------------------------
+_WORD_TO_NUM = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+}
+_NUM_WORD_RE = r'\b(?:\d+|' + '|'.join(_WORD_TO_NUM.keys()) + r')\b'
+
+def _to_num(s: str) -> int:
+    s = s.strip().lower()
+    if s in _WORD_TO_NUM:
+        return _WORD_TO_NUM[s]
+    return int(s) if s.isdigit() else 0
+
 def max_years_in_text(text: str) -> int:
     """Return the highest year requirement found in text, or 0 if none."""
     t = text.lower()
@@ -177,10 +259,42 @@ def max_years_in_text(text: str) -> int:
     # "minimum 5 years", "at least 3 years", "requires 4 years"
     for m in re.finditer(r'(?:minimum|at least|requires?)\s+(\d+)\+?\s*years?', t):
         best = max(best, int(m.group(1)))
+    # "5-8 years of experience", "5 to 8 years experience" (range before the word "years")
+    for m in re.finditer(r'(\d+)\s*(?:-|–|to)\s*\d+\s*years?\s*(?:of\s*)?(?:experience|exp\b)', t):
+        best = max(best, int(m.group(1)))
+    # "experience range - 6 to 10 years", "experience: 3-5 years" (word "experience" comes first)
+    for m in re.finditer(r'experience\s*(?:range|level)?\s*[:\-–]?\s*(\d+)\s*(?:\+|-|–|to)?\s*\d*\s*years?', t):
+        best = max(best, int(m.group(1)))
+    # Spelled-out numbers: "five or more years", "three-plus years", "at least seven years"
+    _lead_num_re = r'\d+|' + '|'.join(_WORD_TO_NUM.keys())
+    for m in re.finditer(_NUM_WORD_RE + r'(?:\s+or\s+more|\+|-plus)?\s*years?\s*(?:of\s*)?(?:experience|exp\b)?', t):
+        lead = re.match(_lead_num_re, m.group(0))
+        if lead:
+            n = _to_num(lead.group(0))
+            if n:
+                best = max(best, n)
+    for m in re.finditer(r'(?:minimum|at least|requires?)\s+' + _NUM_WORD_RE + r'\s*(?:\+|-plus)?\s*years?', t):
+        sub = re.search(_NUM_WORD_RE, m.group(0))
+        if sub:
+            n = _to_num(sub.group(0))
+            best = max(best, n)
     return best
 
 SENIOR_TITLE_RE = re.compile(
-    r'\b(senior|sr\.?|lead|principal|staff\s+engineer|director|manager)\b', re.I
+    r'\b(senior|sr\.?|lead|principal|staff\s+engineer|director|manager|'
+    r'vice\s+president|\bvp\b|head\s+of)\b', re.I
+)
+
+# Requires the job to actually look like a software/dev role. Adzuna is a job
+# aggregator with loose matching under the hood (its "phrase match" behavior
+# isn't officially documented), so completely unrelated listings sometimes
+# come back for a tech search. This is a client-side backstop: if neither the
+# title nor description contains any recognizable tech/dev term, reject it
+# regardless of what Adzuna's own matching decided.
+TECH_RELEVANCE_RE = re.compile(
+    r'\b(developer|engineer|programmer|software|swe|full[\s-]?stack|'
+    r'front[\s-]?end|back[\s-]?end|application develop|dev\b|coding|'
+    r'\.net|devops|cloud engineer|data engineer|qa engineer|sde\b)\b', re.I
 )
 
 def should_filter(job: dict[str, Any]) -> tuple[bool, str]:
@@ -189,10 +303,20 @@ def should_filter(job: dict[str, Any]) -> tuple[bool, str]:
     title   = job.get("title",   "").lower()
     desc    = job.get("excerpt", "").lower()
 
-    # -- Company blacklist --
+    # -- Blacklist (checked against company, title, and description) --
+    # Word-boundary matching, not raw substring: a single-word term like
+    # "sales" would otherwise match inside unrelated words/company names
+    # such as "Salesforce" (a CRM tool mentioned in tons of unrelated
+    # software job postings). Multi-word phrases (e.g. "security clearance")
+    # still match as phrases.
+    haystack = " ".join([company, title, desc])
     for b in BLACKLIST:
-        if b in company:
-            return True, "blacklisted: " + job["company"]
+        if re.search(r'\b' + re.escape(b) + r'\b', haystack):
+            return True, "blacklisted term: " + b
+
+    # -- Relevance check: must actually look like a tech/dev role --
+    if not TECH_RELEVANCE_RE.search(title + " " + desc):
+        return True, "not a tech/dev role: " + job["title"]
 
     # -- Experience filter (skip if MAX_YEARS == 0) --
     if MAX_YEARS > 0:
@@ -200,8 +324,13 @@ def should_filter(job: dict[str, Any]) -> tuple[bool, str]:
         if years > MAX_YEARS:
             return True, str(years) + "+ yrs required (max " + str(MAX_YEARS) + ")"
 
-        # For entry-level settings (<= 2 yrs), also block obvious senior titles
-        if MAX_YEARS <= 2 and SENIOR_TITLE_RE.search(title):
+        # For entry-level settings (&lt;= 2 yrs), also block obvious senior titles.
+        # Checked against title AND the first part of the description, since
+        # a posting's true title (e.g. "Senior Big Data Engineer") sometimes
+        # only appears restated at the start of the description text, while
+        # Adzuna's separate "title" field shows a shortened version.
+        senior_check_text = title + " " + desc[:80]
+        if MAX_YEARS &lt;= 2 and SENIOR_TITLE_RE.search(senior_check_text):
             return True, "senior title: " + job["title"]
 
     return False, ""
@@ -223,50 +352,31 @@ def send_email(jobs: list[dict[str, Any]]) -> None:
         if excerpt and not excerpt.endswith("..."):
             excerpt += "..."
         company_loc = "   ".join(filter(None, [j["company"], j["location"]]))
-        card = (
+        cards += (
             "&lt;div style='border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px;"
             "margin-bottom:14px;background:#fff;'&gt;"
             "&lt;p style='margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;"
             "letter-spacing:.06em;'&gt;via \"" + j["keyword"] + "\"&lt;/p&gt;"
-            "&lt;h3 style='margin:0 0 4px;font-size:16px;color:#111827;line-height:1.35;'&gt;"
-            + j["title"] + "&lt;/h3&gt;"
-        )
-        if company_loc:
-            card += "&lt;p style='margin:0 0 10px;font-size:12px;color:#6b7280;'&gt;"
-                      + company_loc +
-                      "&lt;/p&gt;"
-        if excerpt:
-            card += (
-                "&lt;p style='margin:0 0 12px;font-size:13px;color:#374151;line-height:1.5;'&gt;"
-                + excerpt +
-                "&lt;/p&gt;"
-            )
-        card += (
-            "&lt;a href='" + j["link"] + "' style='display:inline-block;background:#1A56B0;color:#fff;"
+            "&lt;h3 style='margin:0 0 4px;font-size:16px;color:#111827;line-height:1.35;'&gt;" + j["title"] + "&lt;/h3&gt;"
+            + ("&lt;p style='margin:0 0 10px;font-size:12px;color:#6b7280;'&gt;" + company_loc + "&lt;/p&gt;" if company_loc else "")
+            + ("&lt;p style='margin:0 0 12px;font-size:13px;color:#374151;line-height:1.5;'&gt;" + excerpt + "&lt;/p&gt;" if excerpt else "")
+            + "&lt;a href='" + j["link"] + "' style='display:inline-block;background:#1A56B0;color:#fff;"
             "padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;'&gt;"
             "View job -&gt;&lt;/a&gt;&lt;/div&gt;"
         )
-        cards += card
 
     html = (
         "&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style='margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;'&gt;"
         "&lt;div style='max-width:580px;margin:32px auto;padding:0 16px 40px;'&gt;"
         "&lt;div style='background:#1A56B0;border-radius:10px;padding:24px 28px;margin-bottom:24px;'&gt;"
-        "&lt;h2 style='margin:0;color:#fff;font-size:22px;'&gt;[!] "
-        + str(count)
-        + " new job"
-        + ("s" if count > 1 else "")
-        + " found&lt;/h2&gt;"
-        "&lt;p style='margin:6px 0 0;color:#bfdbfe;font-size:13px;'&gt;"
-        + datetime.now().strftime("%B %d, %Y at %H:%M UTC")
-        + " via Adzuna&lt;/p&gt;"
-        "&lt;/div&gt;"
-        + cards +
+        "&lt;h2 style='margin:0;color:#fff;font-size:22px;'&gt;[!] " + str(count) + " new job" + ("s" if count > 1 else "") + " found&lt;/h2&gt;"
+        "&lt;p style='margin:6px 0 0;color:#bfdbfe;font-size:13px;'&gt;" + datetime.now().strftime("%B %d, %Y at %H:%M UTC") + " via Adzuna&lt;/p&gt;"
+        "&lt;/div&gt;" + cards +
         "&lt;p style='text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;'&gt;"
-        "Edit config.json in your repo to change keywords, blacklist, or experience filter."
-        "&lt;/p&gt;"
+        "Edit config.json in your repo to change keywords, blacklist, or experience filter.&lt;/p&gt;"
         "&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;"
     )
+
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -289,22 +399,29 @@ def main():
 
     print("Config: max_years=" + str(MAX_YEARS) + ", blacklist=" + str(BLACKLIST))
 
+    total_queries = 0
+    variant_set: set[str] = set()
     for keyword in config["keywords"]:
-        jobs = fetch_jobs(keyword)
-        print("  '" + keyword + "' -> " + str(len(jobs)) + " results")
-        for job in jobs:
-            if job["id"] in seen:
-                continue
-            filtered, reason = should_filter(job)
-            if filtered:
-                print("    [skip] " + job["title"] + " | " + reason)
-                skipped += 1
-                seen.add(job["id"])   # mark seen so it is not re-checked
-            else:
-                new_jobs.append(job)
-                seen.add(job["id"])
+        variants = expand_keyword(keyword, variant_set)
+        print("'" + keyword + "' expands to " + str(len(variants)) + " search variants")
+        for variant in variants:
+            total_queries += 1
+            jobs = fetch_jobs(variant, label=keyword)
+            print("  '" + variant + "' -> " + str(len(jobs)) + " results")
+            for job in jobs:
+                if job["id"] in seen:
+                    continue
+                filtered, reason = should_filter(job)
+                if filtered:
+                    print("    [skip] " + job["title"] + " | " + reason)
+                    skipped += 1
+                    seen.add(job["id"])   # mark seen so it is not re-checked
+                else:
+                    new_jobs.append(job)
+                    seen.add(job["id"])
 
-    print("\n" + str(len(new_jobs)) + " new jobs, " + str(skipped) + " filtered out")
+    print("\n" + str(total_queries) + " total Adzuna queries run")
+    print(str(len(new_jobs)) + " new jobs, " + str(skipped) + " filtered out")
 
     if new_jobs:
         send_email(new_jobs)
@@ -315,6 +432,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 </textarea>
 <textarea id="F-checker-yml" style="display:none">name: Job Alert Checker
 
